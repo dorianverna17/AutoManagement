@@ -1,5 +1,9 @@
 package app;
 
+import Cars.Bus;
+import Cars.Car;
+import Cars.Truck;
+import Cars.Vehicle;
 import Employees.*;
 
 import java.io.File;
@@ -65,8 +69,6 @@ public class AutoService {
         }
         Date currentDate = new Date(currentYear, currentMonth, currentDay);
         if (employee.getHiring_date().compareTo(currentDate) == 0) {
-            System.out.println(employee.getHiring_date());
-            System.out.println(currentDate);
             System.out.println("Nu se poate adauga angajatul: Data angajarii nu poate fi o data din viitor");
             ok = false;
         }
@@ -186,6 +188,7 @@ public class AutoService {
             System.out.println("4) Calculati salariul unui angajat");
             System.out.println("5) Afisati detalii despre un angajat");
             System.out.println("6) Editati un angajat");
+            System.out.println("7) Adaugati o noua masina in service");
             System.out.println("10) Inchide aplicatia");
             aux = scanner.nextLine();
             switch (aux) {
@@ -244,12 +247,164 @@ public class AutoService {
                     id = Integer.parseInt(aux);
                     AutoService.getInstance().editEmployee(id);
                     break;
+                case "7":
+                    AutoService.getInstance().addNewVehicle();
+                    break;
                 default:
                     System.out.println("Alegerea voastra este invalida");
                     break;
             }
             System.out.println();
             System.out.println();
+        }
+    }
+
+    private void addNewVehicle() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Select what type of vehicle you want to add: ");
+        System.out.println("1) Car");
+        System.out.println("2) Bus");
+        System.out.println("3) Truck");
+        System.out.println("4) Back to Main Screen");
+        String aux = sc.nextLine();
+        if (!aux.equals("4")) {
+            Vehicle vehicle = null;
+            System.out.println("ID-ul vehiculului: ");
+            int id = Integer.parseInt(sc.nextLine());
+            System.out.println("Nr. de km: ");
+            int nr_kilometres = Integer.parseInt(sc.nextLine());
+            System.out.println("Anul fabricatiei: ");
+            int year = Integer.parseInt(sc.nextLine());
+            System.out.println("Motor Diesel (Da/Nu): ");
+            String diesel = sc.nextLine();
+            boolean flag_diesel = diesel.equals("Da");
+            switch (aux) {
+                case "1":
+                    System.out.println("Tipul transmisiei: ");
+                    String transmission = sc.nextLine();
+                    if (transmission.equals("Automat")) {
+                        vehicle = new Car(id, nr_kilometres, year, flag_diesel, "Automat");
+                    } else {
+                        vehicle = new Car(id, nr_kilometres, year, flag_diesel, "Manual");
+                    }
+                    break;
+                case "2":
+                    System.out.println("Numarul de locuri: ");
+                    int seats = Integer.parseInt(sc.nextLine());
+                    vehicle = new Bus(id, nr_kilometres, year, flag_diesel, seats);
+                    break;
+                case "3":
+                    System.out.println("Tonajul camionului: ");
+                    double tonnage = Double.parseDouble(sc.nextLine());
+                    vehicle = new Truck(id, nr_kilometres, year, flag_diesel, tonnage);
+                    break;
+                default:
+                    System.out.println("Optiunea aleasa este invalida");
+            }
+            if (vehicle != null)
+                putVehicleInSystem(vehicle);
+        }
+    }
+
+    private void putVehicleInSystem(Vehicle vehicle) {
+        System.out.println();
+        System.out.println("Alegeti din optiunile urmatoare: ");
+        System.out.println("1) Dati vehiculul primului angajat disponibil");
+        System.out.println("2) Alegeti un anumit angajat care sa se ocupe de vehicul");
+        Scanner sc = new Scanner(System.in);
+        String aux = sc.nextLine();
+        if (aux.equals("1")) {
+            putToTheFirstFreeEmployee(vehicle);
+        } else if (aux.equals("2")) {
+            putToTheChosenEmployee(vehicle);
+        }
+    }
+
+    private void putToTheChosenEmployee(Vehicle vehicle) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println();
+        System.out.println("Give me the ID of the Employee");
+        int id = Integer.parseInt(sc.nextLine());
+        if (id > employees.size())
+            System.out.println("Nu exista acest angajat");
+        else {
+            if (vehicle instanceof Car) {
+                if (!employees.get(id).addToCarList((Car) vehicle)) {
+                    putToTheFirstFreeEmployee(vehicle);
+                }
+            } else if (vehicle instanceof Bus) {
+                if (!employees.get(id).addBus((Bus) vehicle)) {
+                    putToTheFirstFreeEmployee(vehicle);
+                }
+            } else {
+                if (!employees.get(id).addTruck((Truck) vehicle)) {
+                    putToTheFirstFreeEmployee(vehicle);
+                }
+            }
+        }
+    }
+
+    private void putToTheFirstFreeEmployee(Vehicle vehicle) {
+        Scanner sc = new Scanner(System.in);
+        int flag = 0;
+        // Daca pot sa adaug in lista unui angajat atunci adaug
+        for (int i = 0; i < employees.size(); i++) {
+            if (vehicle instanceof Car) {
+                if (employees.get(i).addToCarList((Car) vehicle)) {
+                    flag = 1;
+                    break;
+                }
+            } else if (vehicle instanceof Bus) {
+                if (employees.get(i).addBus((Bus) vehicle)) {
+                    flag = 1;
+                    break;
+                }
+            } else {
+                if (employees.get(i).addTruck((Truck) vehicle)) {
+                    flag = 1;
+                    break;
+                }
+            }
+        }
+        // Daca nu este disponibil niciun angajat, atunci pun
+        // masina in asteptare la cel care are timpul de asteptare cel mai mic
+        // sau aleg sa plec
+        if (flag == 0) {
+            System.out.println();
+            System.out.println("1) Ramai la coada");
+            System.out.println("2) Parasesti atelierul auto");
+            if (sc.nextLine().equals("1"))
+                putVehicleToTheSmallerQueue(vehicle);
+        }
+    }
+
+    private void putVehicleToTheSmallerQueue(Vehicle vehicle) {
+        Employee employee = null;
+        int min = Integer.MAX_VALUE;
+        if (vehicle instanceof Car) {
+            for (int i = 0; i < employees.size(); i++) {
+                if (min > employees.get(i).getTime_to_wait_cars()) {
+                    employee = employees.get(i);
+                }
+            }
+            if (employee != null)
+                employee.addCarToQueue((Car)vehicle);
+        } else if (vehicle instanceof Bus) {
+            for (int i = 0; i < employees.size(); i++) {
+                if (min > employees.get(i).getTime_to_wait_bus()) {
+                    employee = employees.get(i);
+                }
+            }
+            if (employee != null)
+                employee.addBusToQueue((Bus)vehicle);
+        } else {
+            for (int i = 0; i < employees.size(); i++) {
+                if (min > employees.get(i).getTime_to_wait_truck()) {
+                    employee = employees.get(i);
+                }
+            }
+            if (employee != null)
+                employee.addTruckToQueue((Truck)vehicle);
         }
     }
 }
