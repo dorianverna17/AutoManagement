@@ -26,11 +26,16 @@ public class Bus extends Vehicle {
 
     @Override
     public double getInsurancePolicyDiscount() {
-        return (double) 10 / 100 * getInsurancePolicy();
+        return 0.1 * getInsurancePolicy();
     }
 
     public String toString() {
-        return "ID: " + ID + "Year: " + fabrication_year + "Km: " +
-                nr_kilometres + "Type: " + type + "Seats: " + nr_places;
+        String motor;
+        if (type)
+            motor = "Diesel";
+        else
+            motor = "Benzina";
+        return "ID: " + ID + " An: " + fabrication_year + " Km: " +
+                nr_kilometres + " Tip: " + motor + " Nr. locuri: " + nr_places;
     }
 }

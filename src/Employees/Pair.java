@@ -28,4 +28,8 @@ public class Pair<T, K> {
     public void setValue2(K value2) {
         this.value2 = value2;
     }
+
+    public String toString() {
+        return value1 + " Timp estimat de reparare: " + value2;
+    }
 }

@@ -1,18 +1,18 @@
+import Cars.Bus;
+import Cars.Car;
+import Cars.Truck;
+import Cars.Vehicle;
 import Employees.*;
 import app.AutoService;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLOutput;
-import java.util.Calendar;
 import java.util.Scanner;
-import java.util.SortedMap;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void readEmployeesFromFile(String filename) {
         try {
-            File file = new File("./Employees.txt");
+            File file = new File(filename);
             Scanner scanner = new Scanner(file);
             String[] employee_details, birth_details, hire_details;
             Employee employee;
@@ -38,6 +38,44 @@ public class Main {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void readVehiclesFromFile(String filename) {
+        try {
+            File file = new File(filename);
+            Scanner scanner = new Scanner(file);
+            int id, year, nr_km;
+            boolean diesel;
+            String[] details;
+            Vehicle vehicle = null;
+            while (scanner.hasNext()) {
+                details = scanner.nextLine().split(" ", -1);
+                id = Integer.parseInt(details[0]);
+                year = Integer.parseInt(details[1]);
+                nr_km = Integer.parseInt(details[2]);
+                if (details[3].equals("Da"))
+                    diesel = true;
+                else
+                    diesel = false;
+                if (filename.contains("Cars"))
+                    vehicle = new Car(id, nr_km, year, diesel, details[4]);
+                else if (filename.contains("Bus")) {
+                    vehicle = new Bus(id, nr_km, year, diesel, Integer.parseInt(details[4]));
+                } else if (filename.contains("Truck.txt")) {
+                    vehicle = new Truck(id, nr_km, year, diesel, Double.parseDouble(details[4]));
+                }
+                AutoService.getInstance().putToTheWaitingQueueIfNoOneFree(vehicle);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        readEmployeesFromFile("./Employees.txt");
+        readVehiclesFromFile("./Cars.txt");
+        readVehiclesFromFile("./Bus.txt");
+        readVehiclesFromFile("./Truck.txt");
         AutoService.getInstance().showMenu();
     }
 }

@@ -24,11 +24,16 @@ public class Car extends Vehicle {
 
     @Override
     public double getInsurancePolicyDiscount() {
-        return (double) 5 / 100 * getInsurancePolicy();
+        return 0.05 * getInsurancePolicy();
     }
 
     public String toString() {
-        return "ID: " + ID + "Year: " + fabrication_year + "Km: " +
-                nr_kilometres + "Type: " + type + "Transmission: " + transmission;
+        String motor;
+        if (type)
+            motor = "Diesel";
+        else
+            motor = "Benzina";
+        return "ID: " + ID + " An: " + fabrication_year + " Km: " +
+                nr_kilometres + " Tip: " + motor + " Transmisie: " + transmission;
     }
 }

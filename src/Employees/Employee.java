@@ -35,6 +35,9 @@ public abstract class Employee{
     protected int time_to_wait_bus;
     protected int time_to_wait_truck;
 
+    // variabila pe care o folosesc pentru a contoriza cat de solicitat este angajatul
+    protected int requested;
+
     public Employee(String lastname, String firstname, Date birth_date, Date hiring_date) {
         // auto-increment pentru ID
         this.ID = AutoService.getInstance().getEmployees().size();
@@ -44,6 +47,9 @@ public abstract class Employee{
         this.birth_date = birth_date;
         this.hiring_date = hiring_date;
         car_queue = new ArrayList<>();
+        bus_queue = new ArrayList<>();
+        truck_queue = new ArrayList<>();
+        car_list = new ArrayList<>();
         bus = null;
         truck = null;
         time_to_wait_cars = 0;
@@ -74,17 +80,17 @@ public abstract class Employee{
     // voi considera acel timp estimativ ca fiind % 3 ore din numarul de km
     // pe care ii are la bord vehiculul
     public void addCarToQueue(Car car) {
-        car_queue.add(car_queue.size() - 1, new Pair<>(car, car.getNr_kilometres() % 3 + 1));
+        car_queue.add(car_queue.size(), new Pair<>(car, car.getNr_kilometres() % 3 + 1));
         time_to_wait_cars += car.getNr_kilometres() % 3 + 1;
     }
 
     public void addBusToQueue(Bus bus) {
-        bus_queue.add(car_queue.size() - 1, new Pair<>(bus, bus.getNr_kilometres() % 3 + 1));
+        bus_queue.add(bus_queue.size(), new Pair<>(bus, bus.getNr_kilometres() % 3 + 1));
         time_to_wait_bus += bus.getNr_kilometres() % 3 + 1;
     }
 
     public void addTruckToQueue(Truck truck) {
-        truck_queue.add(truck_queue.size() - 1, new Pair<>(truck, truck.getNr_kilometres() % 3 + 1));
+        truck_queue.add(truck_queue.size(), new Pair<>(truck, truck.getNr_kilometres() % 3 + 1));
         time_to_wait_truck += truck.getNr_kilometres() % 3 + 1;
     }
 
@@ -156,6 +162,38 @@ public abstract class Employee{
         return true;
     }
 
+    public int getRequested() {
+        return requested;
+    }
+
+    public void setRequested(int requested) {
+        this.requested = requested;
+    }
+
+    public ArrayList<Pair<Car, Integer>> getCar_list() {
+        return car_list;
+    }
+
+    public Pair<Bus, Integer> getBus() {
+        return bus;
+    }
+
+    public Pair<Truck, Integer> getTruck() {
+        return truck;
+    }
+
+    public ArrayList<Pair<Car, Integer>> getCar_queue() {
+        return car_queue;
+    }
+
+    public ArrayList<Pair<Bus, Integer>> getBus_queue() {
+        return bus_queue;
+    }
+
+    public ArrayList<Pair<Truck, Integer>> getTruck_queue() {
+        return truck_queue;
+    }
+
     public int getID() {
         return ID;
     }
@@ -202,5 +240,17 @@ public abstract class Employee{
 
     public int getTime_to_wait_truck() {
         return time_to_wait_truck;
+    }
+
+    public Double getMoneyEarned() {
+        double money = 0d;
+        for (Pair<Car, Integer> carIntegerPair : car_list) {
+            money += (double) carIntegerPair.getValue1().getInsurancePolicyDiscount() / 100;
+        }
+        if (bus != null)
+            money += (double) bus.getValue1().getInsurancePolicyDiscount() / 100;
+        if (truck != null)
+            money += (double) truck.getValue1().getInsurancePolicyDiscount() / 100;
+        return money;
     }
 }

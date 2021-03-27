@@ -24,11 +24,16 @@ public class Truck extends Vehicle {
 
     @Override
     public double getInsurancePolicyDiscount() {
-        return (double) 15 / 100 * getInsurancePolicy();
+        return 0.15 * getInsurancePolicy();
     }
 
     public String toString() {
-        return "ID: " + ID + "Year: " + fabrication_year + "Km: " +
-                nr_kilometres + "Type: " + type + "Tonnage: " + tonnage;
+        String motor;
+        if (type)
+            motor = "Diesel";
+        else
+            motor = "Benzina";
+        return "ID: " + ID + " An: " + fabrication_year + " Km: " +
+                nr_kilometres + " Tip: " + motor + " Tonaj: " + tonnage;
     }
 }
